@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Steigungs-Detektiv & Ableitungsregeln - Q11 Bayern</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- KaTeX für wunderschöne mathematische Formeln -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
+        .hidden-step { display: none !important; }
+        .active-step { display: block; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Touch Optimierungen */
+        .touch-action-none { touch-action: none; }
+        * { -webkit-tap-highlight-color: transparent; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 h-[100dvh] h-screen flex flex-col md:flex-row">
+
+    <!-- LINKS: Interaktiver Graph (Echtzeit-Visualisierung) -->
+    <div class="w-full md:w-1/2 h-[42vh] md:h-full flex flex-col items-center justify-center bg-white border-r border-slate-200 p-4 relative shadow-lg z-10">
+        <div class="absolute top-3 left-4 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-indigo-600 animate-pulse"></span>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Live-Steigungs-Analyse</span>
+        </div>
+        
+        <div id="graph-container" class="w-full max-w-[420px] aspect-square relative mt-2"></div>
+        
+        <!-- Live-Anzeige für Tangente, Steigung und Koordinaten -->
+        <div id="live-panel" class="mt-2 text-xs md:text-sm font-mono bg-slate-900 text-slate-200 px-4 py-2.5 rounded-lg border border-slate-700 text-center w-full max-w-[420px] shadow-inner leading-relaxed">
+            Wähle rechts ein Kapitel aus, um zu starten!
+        </div>
+    </div>
+
+    <!-- RECHTS: Content-Bereich & Aufgaben -->
+    <div class="w-full md:w-1/2 h-[58vh] md:h-full overflow-y-auto p-4 md:p-8 bg-slate-50" id="right-pane">
+        <div class="max-w-xl mx-auto pb-20">
+            
+            <!-- PROGRESS NAVIGATION (Alle Kapitel immer anwählbar) -->
+            <div id="step-nav" class="flex flex-wrap gap-2 mb-6 pb-4 border-b border-slate-300">
+                <!-- Nav-Buttons werden dynamisch gerendert -->
+            </div>
+
+            <!-- KAPITEL 1: Der Steigungs-Detektiv -->
+            <div id="step-1" class="step-card active-step bg-white p-6 rounded-xl shadow-sm border-t-4 border-blue-500">
+                <div class="flex justify-between items-start mb-3">
+                    <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded">Kapitel 1</span>
+                    <span class="text-xs text-slate-400">Schwierigkeit: Leicht</span>
+                </div>
+                <h3 class="text-xl font-bold mb-2 text-slate-800">Der Steigungs-Detektiv</h3>
+                <p class="mb-4 text-slate-600 text-sm leading-relaxed">
+                    Wie hängt der Graph einer Funktion <span class="math" data-tex="f">f</span> mit ihrer Ableitungsfunktion <span class="math" data-tex="f'">f'</span> zusammen?
+                </p>
+
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-3.5 rounded-r-lg text-xs md:text-sm text-slate-700 mb-5 space-y-2">
+                    <p class="font-bold text-blue-900">🔬 Deine Erkundungsaufgabe:</p>
+                    <p>Bewege deine Maus oder deinen Finger über den linken Graphen. Du steuerst die Position <span class="font-semibold text-indigo-700">x</span>.</p>
+                    <ul class="list-disc pl-5 space-y-1 mt-1">
+                        <li>Die <span class="text-indigo-600 font-bold">blaue Kurve</span> ist die Funktion <span class="math" data-tex="f(x)">f(x)</span>.</li>
+                        <li>Die <span class="text-emerald-600 font-bold">grüne Linie</span> ist die Tangente an dieser Stelle.</li>
+                        <li>Der <span class="text-rose-600 font-bold">rote Punkt</span> markiert den Steigungswert <span class="math" data-tex="(x \mid f'(x))">(x | f'(x))</span>. Seine Höhe entspricht exakt der Tangentensteigung!</li>
+                    </ul>
+                </div>
+
+                <p class="mb-3 font-semibold text-slate-800 text-sm">Finde durch Bewegen des Tracers die richtigen Zusammenhänge heraus:</p>
+                
+                <div class="space-y-2.5 mb-5" id="mc-1">
+                    <label class="flex items-start gap-3 p-3 bg-slate-50 hover:bg-slate-100 rounded-lg cursor-pointer border border-slate-200 transition">
+                        <input type="checkbox" value="0" class="mt-1 w-4 h-4 text-blue-600 rounded">
+                        <div class="text-xs md:text-sm text-slate-700">
+                            An Stellen mit waagerechter Tangente (z.B. Hochpunkt/Tiefpunkt) hat die Ableitung <span class="math" data-tex="f'">f'</span> eine <strong>Nullstelle</strong> (schneidet die x-Achse).
+                        </div>
+                    </label>
+                    <label class="flex items-start gap-3 p-3 bg-slate-50 hover:bg-slate-100 rounded-lg cursor-pointer border border-slate-200 transition">
+                        <input type="checkbox" value="1" class="mt-1 w-4 h-4 text-blue-600 rounded">
+                        <div class="text-xs md:text-sm text-slate-700">
+                            Dort, wo der blaue Graph <span class="math" data-tex="f">f</span> streng monoton steigt, verläuft der rote Graph <span class="math" data-tex="f'">f'</span> <strong>oberhalb</strong> der x-Achse (positive y-Werte).
+                        </div>
+                    </label>
+                    <label class="flex items-start gap-3 p-3 bg-slate-50 hover:bg-slate-100 rounded-lg cursor-pointer border border-slate-200 transition">
+                        <input type="checkbox" value="2" class="mt-1 w-4 h-4 text-blue-600 rounded">
+                        <div class="text-xs md:text-sm text-slate-700">
+                            Wenn der blaue Graph <span class="math" data-tex="f">f</span> streng monoton fällt, hat die Ableitung <span class="math" data-tex="f'">f'</span> ebenfalls positive Werte.
+                        </div>
+                    </label>
+                </div>
+
+                <div id="feedback-1" class="hidden mb-4 p-3 rounded-lg text-xs md:text-sm font-semibold"></div>
+                <button onclick="checkStep1()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors text-sm">Zusammenhänge prüfen</button>
+            </div>
+
+            <!-- KAPITEL 2: Grafisches Ableiten (Zuordnungs-Spiel) -->
+            <div id="step-2" class="step-card hidden-step bg-white p-6 rounded-xl shadow-sm border-t-4 border-indigo-500">
+                <div class="flex justify-between items-start mb-3">
+                    <span class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-1 rounded">Kapitel 2</span>
+                    <span class="text-xs text-slate-400">Schwierigkeit: Mittel</span>
+                </div>
+                <h3 class="text-xl font-bold mb-2 text-slate-800">Zuordnungs-Spiel</h3>
+                <p class="mb-4 text-slate-600 text-xs md:text-sm leading-relaxed">
+                    Ordne die Graphen der Funktionen <span class="math" data-tex="f_1, f_2, f_3">f_1, f_2, f_3</span> ihren korrekten Ableitungsfunktionen <span class="math" data-tex="f'_1, f'_2, f'_3">f'_1, f'_2, f'_3</span> zu! Klicke zuerst links auf eine Funktion und dann rechts auf die passende Ableitung. Wähle anschließend die richtige Begründung.
+                </p>
+
+                <!-- INTERAKTIVE MATCHING ZONE -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <!-- Spalte 1: Ursprungsfunktionen -->
+                    <div class="space-y-3">
+                        <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Funktionen f</span>
+                        
+                        <!-- Karte F1 -->
+                        <div id="card-f1" onclick="selectMatchingCard('f1')" class="p-2.5 border-2 rounded-xl bg-white cursor-pointer transition-all hover:shadow flex flex-col items-center gap-1 border-slate-200">
+                            <span class="text-xs font-bold text-slate-500">Funktion A</span>
+                            <svg class="w-24 h-20 bg-slate-50 rounded border border-slate-100" viewBox="0 0 100 100">
+                                <line x1="10" y1="50" x2="90" y2="50" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <line x1="50" y1="10" x2="50" y2="90" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <!-- Extrempunkt bei x=50 markiert (waagerechte Tangente) -->
+                                <circle cx="50" cy="75" r="2.5" fill="#10b981"/>
+                                <!-- Parabel nach oben -->
+                                <path d="M 20 25 Q 50 75 80 25" fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+                            </svg>
+                            <span class="text-[10px] text-slate-400 text-center leading-tight">U-Parabel nach oben</span>
+                        </div>
+
+                        <!-- Karte F2 -->
+                        <div id="card-f2" onclick="selectMatchingCard('f2')" class="p-2.5 border-2 rounded-xl bg-white cursor-pointer transition-all hover:shadow flex flex-col items-center gap-1 border-slate-200">
+                            <span class="text-xs font-bold text-slate-500">Funktion B</span>
+                            <svg class="w-24 h-20 bg-slate-50 rounded border border-slate-100" viewBox="0 0 100 100">
+                                <line x1="10" y1="50" x2="90" y2="50" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <line x1="50" y1="10" x2="50" y2="90" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <!-- Extremstellen-Hilfslinien (grün, gestrichelt) -->
+                                <line x1="18" y1="30" x2="42" y2="30" stroke="#10b981" stroke-width="1.2" stroke-dasharray="2,2"/>
+                                <line x1="58" y1="70" x2="82" y2="70" stroke="#10b981" stroke-width="1.2" stroke-dasharray="2,2"/>
+                                <!-- Extrempunkte explizit markiert -->
+                                <circle cx="30" cy="30" r="2.5" fill="#10b981"/>
+                                <circle cx="70" cy="70" r="2.5" fill="#10b981"/>
+                                <!-- Ausgeprägte kubische Kurve -->
+                                <path d="M 15 75 C 25 10, 38 10, 50 50 C 62 90, 75 90, 85 25" fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+                            </svg>
+                            <span class="text-[10px] text-slate-400 text-center leading-tight">Kubisch (HP links, TP rechts)</span>
+                        </div>
+
+                        <!-- Karte F3 -->
+                        <div id="card-f3" onclick="selectMatchingCard('f3')" class="p-2.5 border-2 rounded-xl bg-white cursor-pointer transition-all hover:shadow flex flex-col items-center gap-1 border-slate-200">
+                            <span class="text-xs font-bold text-slate-500">Funktion C</span>
+                            <svg class="w-24 h-20 bg-slate-50 rounded border border-slate-100" viewBox="0 0 100 100">
+                                <line x1="10" y1="50" x2="90" y2="50" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <line x1="50" y1="10" x2="50" y2="90" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <!-- Extrempunkt bei x=50 markiert (waagerechte Tangente) -->
+                                <circle cx="50" cy="25" r="2.5" fill="#10b981"/>
+                                <!-- Nach unten geöffnete Parabel -->
+                                <path d="M 20 75 Q 50 25 80 75" fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+                            </svg>
+                            <span class="text-[10px] text-slate-400 text-center leading-tight">U-Parabel nach unten</span>
+                        </div>
+                    </div>
+
+                    <!-- Spalte 2: Ableitungen -->
+                    <div class="space-y-3">
+                        <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Ableitungen f'</span>
+
+                        <!-- Slot/Karte D1 -->
+                        <div id="card-df1" onclick="selectMatchingTarget('df1')" class="p-2.5 border-2 rounded-xl bg-white cursor-pointer transition-all hover:shadow flex flex-col items-center gap-1 border-slate-200">
+                            <span class="text-xs font-bold text-slate-500">Ableitung 1</span>
+                            <svg class="w-24 h-20 bg-slate-50 rounded border border-slate-100" viewBox="0 0 100 100">
+                                <line x1="10" y1="50" x2="90" y2="50" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <line x1="50" y1="10" x2="50" y2="90" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <!-- Nullstelle bei x=50 markiert -->
+                                <circle cx="50" cy="50" r="2.5" fill="#ef4444"/>
+                                <!-- Gerade mit negativer Steigung -->
+                                <line x1="20" y1="25" x2="80" y2="75" stroke="#ef4444" stroke-width="2.5"/>
+                            </svg>
+                            <span id="label-df1" class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">Nicht zugeordnet</span>
+                        </div>
+
+                        <!-- Slot/Karte D2 -->
+                        <div id="card-df2" onclick="selectMatchingTarget('df2')" class="p-2.5 border-2 rounded-xl bg-white cursor-pointer transition-all hover:shadow flex flex-col items-center gap-1 border-slate-200">
+                            <span class="text-xs font-bold text-slate-500">Ableitung 2</span>
+                            <svg class="w-24 h-20 bg-slate-50 rounded border border-slate-100" viewBox="0 0 100 100">
+                                <line x1="10" y1="50" x2="90" y2="50" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <line x1="50" y1="10" x2="50" y2="90" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <!-- Nullstellen exakt bei x=30 und x=70 (analog zu f(x)) -->
+                                <circle cx="30" cy="50" r="2.5" fill="#ef4444"/>
+                                <circle cx="70" cy="50" r="2.5" fill="#ef4444"/>
+                                <!-- Parabel nach oben -->
+                                <path d="M 18 20 Q 50 85 82 20" fill="none" stroke="#ef4444" stroke-width="2.5"/>
+                            </svg>
+                            <span id="label-df2" class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">Nicht zugeordnet</span>
+                        </div>
+
+                        <!-- Slot/Karte D3 -->
+                        <div id="card-df3" onclick="selectMatchingTarget('df3')" class="p-2.5 border-2 rounded-xl bg-white cursor-pointer transition-all hover:shadow flex flex-col items-center gap-1 border-slate-200">
+                            <span class="text-xs font-bold text-slate-500">Ableitung 3</span>
+                            <svg class="w-24 h-20 bg-slate-50 rounded border border-slate-100" viewBox="0 0 100 100">
+                                <line x1="10" y1="50" x2="90" y2="50" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <line x1="50" y1="10" x2="50" y2="90" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <!-- Nullstelle bei x=50 markiert -->
+                                <circle cx="50" cy="50" r="2.5" fill="#ef4444"/>
+                                <!-- Gerade mit positiver Steigung -->
+                                <line x1="20" y1="75" x2="80" y2="25" stroke="#ef4444" stroke-width="2.5"/>
+                            </svg>
+                            <span id="label-df3" class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">Nicht zugeordnet</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BEGRÜNDUNGS-BEREICH -->
+                <div id="reasoning-container" class="mb-5 p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3.5">
+                    <span class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Ergänze die mathematischen Begründungen:</span>
+                    
+                    <div class="space-y-2.5">
+                        <div class="flex flex-col gap-1">
+                            <span class="text-xs font-semibold text-slate-700">Begründung für Funktion A:</span>
+                            <select id="reason-f1" class="text-xs bg-white border border-slate-300 rounded p-2 focus:ring-2 focus:ring-indigo-500">
+                                <option value="">-- Begründung wählen --</option>
+                                <option value="pos_slope">Die Steigung ist überall linear steigend. Die Ableitung ist folglich eine Gerade mit positiver Steigung.</option>
+                                <option value="neg_slope">Die Steigung ist überall linear fallend. Die Ableitung ist folglich eine Gerade mit negativer Steigung.</option>
+                                <option value="extrema">Die Funktion hat zwei Extremstellen (waagerechte Tangenten). Die Ableitung muss genau zwei Nullstellen besitzen.</option>
+                            </select>
+                        </div>
+
+                        <div class="flex flex-col gap-1">
+                            <span class="text-xs font-semibold text-slate-700">Begründung für Funktion B:</span>
+                            <select id="reason-f2" class="text-xs bg-white border border-slate-300 rounded p-2 focus:ring-2 focus:ring-indigo-500">
+                                <option value="">-- Begründung wählen --</option>
+                                <option value="pos_slope">Die Steigung ist überall linear steigend. Die Ableitung ist folglich eine Gerade mit positiver Steigung.</option>
+                                <option value="neg_slope">Die Steigung ist überall linear fallend. Die Ableitung ist folglich eine Gerade mit negativer Steigung.</option>
+                                <option value="extrema">Die Funktion hat zwei Extremstellen (waagerechte Tangenten). Die Ableitung muss genau zwei Nullstellen besitzen.</option>
+                            </select>
+                        </div>
+
+                        <div class="flex flex-col gap-1">
+                            <span class="text-xs font-semibold text-slate-700">Begründung für Funktion C:</span>
+                            <select id="reason-f3" class="text-xs bg-white border border-slate-300 rounded p-2 focus:ring-2 focus:ring-indigo-500">
+                                <option value="">-- Begründung wählen --</option>
+                                <option value="pos_slope">Die Steigung ist überall linear steigend. Die Ableitung ist folglich eine Gerade mit positiver Steigung.</option>
+                                <option value="neg_slope">Die Steigung ist überall linear fallend. Die Ableitung ist folglich eine Gerade mit negativer Steigung.</option>
+                                <option value="extrema">Die Funktion hat zwei Extremstellen (waagerechte Tangenten). Die Ableitung muss genau zwei Nullstellen besitzen.</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="feedback-2" class="hidden mb-4 p-3 rounded-lg text-xs md:text-sm font-semibold"></div>
+                <div class="flex gap-2">
+                    <button onclick="checkStep2()" class="w-2/3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors text-sm">Zuordnung prüfen</button>
+                    <button onclick="resetStep2()" class="w-1/3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-4 rounded-lg shadow transition-colors text-sm">Reset</button>
+                </div>
+            </div>
+
+            <!-- KAPITEL 3: Die Potenzregel -->
+            <div id="step-3" class="step-card hidden-step bg-white p-6 rounded-xl shadow-sm border-t-4 border-amber-500">
+                <div class="flex justify-between items-start mb-3">
+                    <span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded">Kapitel 3</span>
+                    <span class="text-xs text-slate-400">Schwierigkeit: Mittel</span>
+                </div>
+                <h3 class="text-xl font-bold mb-2 text-slate-800">Die Potenzregel</h3>
+                <p class="mb-4 text-slate-600 text-sm leading-relaxed">
+                    Für ganzrationale Terme der Form <span class="math" data-tex="f(x) = x^n">f(x) = x^n</span> gilt die fundamentale <strong>Potenzregel</strong>:
+                </p>
+
+                <div class="text-center py-4 bg-amber-50 rounded-lg border border-amber-200 shadow-inner text-base md:text-lg font-mono mb-5">
+                    <div id="math-power-rule"></div>
+                </div>
+
+                <!-- SLIDER FOR EXPONENT N -->
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-6">
+                    <div class="flex justify-between text-xs md:text-sm font-semibold text-slate-700 mb-2">
+                        <span>Verändere den Exponenten n:</span>
+                        <span class="font-mono bg-amber-200 text-amber-900 px-2 py-0.5 rounded font-bold" id="val-n">n = 3</span>
+                    </div>
+                    <input type="range" id="slider-n" min="1" max="5" step="1" value="3" oninput="onPowerSliderChange()" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500">
+                    
+                    <div class="mt-4 p-2 bg-white rounded border border-slate-100 text-center text-xs md:text-sm text-slate-700" id="live-rule-text">
+                        Aus f(x) = x³ wird f'(x) = 3x²
+                    </div>
+                </div>
+
+                <!-- MINI QUIZ FOR CHAPTER 3 -->
+                <p class="mb-3 font-semibold text-slate-800 text-sm">Schnelltest: Was ist die Ableitung von <span class="math" data-tex="f(x) = x^5">f(x) = x^5</span>?</p>
+                <div class="grid grid-cols-2 gap-2 mb-5" id="quiz-3-options">
+                    <button onclick="selectQuiz3(0)" id="btn-q3-0" class="py-2.5 px-3 text-xs md:text-sm rounded-lg border bg-white border-slate-200 hover:bg-slate-50 text-slate-700 transition">5 · x⁵</button>
+                    <button onclick="selectQuiz3(1)" id="btn-q3-1" class="py-2.5 px-3 text-xs md:text-sm rounded-lg border bg-white border-slate-200 hover:bg-slate-50 text-slate-700 transition">5 · x⁴</button>
+                    <button onclick="selectQuiz3(2)" id="btn-q3-2" class="py-2.5 px-3 text-xs md:text-sm rounded-lg border bg-white border-slate-200 hover:bg-slate-50 text-slate-700 transition">4 · x⁵</button>
+                    <button onclick="selectQuiz3(3)" id="btn-q3-3" class="py-2.5 px-3 text-xs md:text-sm rounded-lg border bg-white border-slate-200 hover:bg-slate-50 text-slate-700 transition">1/5 · x⁴</button>
+                </div>
+
+                <div id="feedback-3" class="hidden mb-4 p-3 rounded-lg text-xs md:text-sm font-semibold"></div>
+                <button onclick="checkStep3()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors text-sm">Antwort einloggen</button>
+            </div>
+
+            <!-- KAPITEL 4: Summe, Faktor & Konstante -->
+            <div id="step-4" class="step-card hidden-step bg-white p-6 rounded-xl shadow-sm border-t-4 border-purple-500">
+                <div class="flex justify-between items-start mb-3">
+                    <span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-1 rounded">Kapitel 4</span>
+                    <span class="text-xs text-slate-400">Schwierigkeit: Schwer</span>
+                </div>
+                <h3 class="text-xl font-bold mb-2 text-slate-800">Die Rechenregeln der Ableitung</h3>
+                <p class="mb-4 text-slate-600 text-sm leading-relaxed">
+                    Kombinierte ganzrationale Funktionen leitest du Glied für Glied mit diesen drei Regeln ab:
+                </p>
+
+                <!-- THEORIE BOX -->
+                <div class="bg-purple-50 p-3.5 rounded-lg text-xs md:text-sm text-slate-700 border border-purple-200 space-y-2 mb-5">
+                    <p>✨ <strong>Faktorregel:</strong> Konstante Faktoren bleiben erhalten: <span class="math" data-tex="[c \cdot f(x)]' = c \cdot f'(x)">[c \cdot f(x)]' = c \cdot f'(x)</span></p>
+                    <p>➕ <strong>Summenregel:</strong> Glieder werden einzeln abgeleitet: <span class="math" data-tex="[u(x) + v(x)]' = u'(x) + v'(x)">[u(x) + v(x)]' = u'(x) + v'(x)</span></p>
+                    <p>🛑 <strong>Konstantenregel:</strong> Reine Konstanten (Zahlen ohne x) fallen weg: <span class="math" data-tex="[c]' = 0">[c]' = 0</span></p>
+                </div>
+
+                <p class="mb-3 font-semibold text-slate-800 text-sm">Ordne die Glieder ihren korrekten Ableitungen zu:</p>
+                
+                <!-- MATCHING TASK KAPITEL 4 -->
+                <div class="space-y-3 mb-6" id="rule-matching-container">
+                    <!-- Aufgabe 1 -->
+                    <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <span class="text-xs md:text-sm font-semibold text-slate-700 font-mono">1) f(x) = 3x⁴ - 5x + 2</span>
+                        <select id="select-rule-1" class="text-xs md:text-sm bg-white border border-slate-300 rounded p-1.5 font-mono focus:ring-purple-500 w-full sm:w-auto">
+                            <option value="">-- Ableitung wählen --</option>
+                            <option value="correct">f'(x) = 12x³ - 5</option>
+                            <option value="w1">f'(x) = 12x³ - 5x</option>
+                            <option value="w2">f'(x) = 7x³ - 5</option>
+                        </select>
+                    </div>
+                    <!-- Aufgabe 2 -->
+                    <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <span class="text-xs md:text-sm font-semibold text-slate-700 font-mono">2) f(x) = 0,5x² + 7x</span>
+                        <select id="select-rule-2" class="text-xs md:text-sm bg-white border border-slate-300 rounded p-1.5 font-mono focus:ring-purple-500 w-full sm:w-auto">
+                            <option value="">-- Ableitung wählen --</option>
+                            <option value="w1">f'(x) = x² + 7</option>
+                            <option value="correct">f'(x) = x + 7</option>
+                            <option value="w2">f'(x) = 0,5x + 7</option>
+                        </select>
+                    </div>
+                    <!-- Aufgabe 3 (Konstante) -->
+                    <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <span class="text-xs md:text-sm font-semibold text-slate-700 font-mono">3) f(x) = π²</span>
+                        <select id="select-rule-3" class="text-xs md:text-sm bg-white border border-slate-300 rounded p-1.5 font-mono focus:ring-purple-500 w-full sm:w-auto">
+                            <option value="">-- Ableitung wählen --</option>
+                            <option value="w1">f'(x) = 2π</option>
+                            <option value="w2">f'(x) = 2x</option>
+                            <option value="correct">f'(x) = 0</option>
+                        </select>
+                    </div>
+                    <!-- Aufgabe 4 (Ausmultiplizieren Einfach) -->
+                    <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <span class="text-xs md:text-sm font-semibold text-slate-700 font-mono">4) f(x) = x(2x² - 5)</span>
+                        <select id="select-rule-4" class="text-xs md:text-sm bg-white border border-slate-300 rounded p-1.5 font-mono focus:ring-purple-500 w-full sm:w-auto">
+                            <option value="">-- Ableitung wählen --</option>
+                            <option value="correct">f'(x) = 6x² - 5</option>
+                            <option value="w1">f'(x) = 1 · 4x = 4x</option>
+                            <option value="w2">f'(x) = 2x² - 5</option>
+                        </select>
+                    </div>
+                    <!-- Aufgabe 5 (Ausmultiplizieren mit Klammern) -->
+                    <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <span class="text-xs md:text-sm font-semibold text-slate-700 font-mono">5) f(x) = (x + 3)(x - 2)</span>
+                        <select id="select-rule-5" class="text-xs md:text-sm bg-white border border-slate-300 rounded p-1.5 font-mono focus:ring-purple-500 w-full sm:w-auto">
+                            <option value="">-- Ableitung wählen --</option>
+                            <option value="w1">f'(x) = 1 · 1 = 1</option>
+                            <option value="correct">f'(x) = 2x + 1</option>
+                            <option value="w2">f'(x) = 2x - 6</option>
+                        </select>
+                    </div>
+                    <!-- Aufgabe 6 (Parameter / Mehrere Variablen) -->
+                    <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex flex-col">
+                            <span class="text-xs md:text-sm font-semibold text-slate-700 font-mono">6) f(x) = t · x⁵ - 4t³</span>
+                            <span class="text-[10px] text-purple-600 font-bold">(Ableitung nach x)</span>
+                        </div>
+                        <select id="select-rule-6" class="text-xs md:text-sm bg-white border border-slate-300 rounded p-1.5 font-mono focus:ring-purple-500 w-full sm:w-auto">
+                            <option value="">-- Ableitung wählen --</option>
+                            <option value="correct">f'(x) = 5t · x⁴</option>
+                            <option value="w1">f'(x) = 5t · x⁴ - 12t²</option>
+                            <option value="w2">f'(x) = 5x⁴</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="feedback-4" class="hidden mb-4 p-3 rounded-lg text-xs md:text-sm font-semibold"></div>
+                <button onclick="checkStep4()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors text-sm">Regel-Match prüfen</button>
+            </div>
+
+            <!-- KAPITEL 5: Meister-Trainer -->
+            <div id="step-5" class="step-card hidden-step bg-white p-6 rounded-xl shadow-sm border-t-4 border-emerald-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-emerald-600">Meister-Trainer</h3>
+                    <span id="trainer-counter" class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">Fragen gelöst: 0</span>
+                </div>
+                <p class="mb-4 text-slate-600 text-xs md:text-sm">
+                    Stelle dich gemischten Abitur- und Q11-Prüfungsfragen! Es können <strong>keine, eine oder mehrere</strong> Antworten richtig sein.
+                </p>
+
+                <div id="trainer-question-container" class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4 shadow-inner">
+                    <p id="trainer-q-text" class="font-semibold text-slate-800 text-sm md:text-base mb-4"></p>
+                    <div id="trainer-options" class="space-y-2">
+                        <!-- Dynamisch -->
+                    </div>
+                </div>
+
+                <div id="trainer-feedback" class="hidden mb-4 p-4 rounded-lg text-xs md:text-sm"></div>
+                
+                <div class="flex gap-2">
+                    <button id="btn-check-trainer" onclick="checkTrainer()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg shadow transition-all text-sm">Antworten prüfen</button>
+                    <button id="btn-next-trainer" onclick="nextTrainerQuestion()" class="hidden w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg shadow transition-all text-sm">Nächste Frage</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- State Management ---
+        const state = {
+            currentStep: 1,
+            
+            // Kapitel 2 Matching State
+            selectedSource: null,
+            matchingPairs: {
+                f1: null, // expected: df3
+                f2: null, // expected: df2
+                f3: null  // expected: df1
+            },
+
+            // Kapitel 3 State
+            exponentN: 3,
+            selectedQuiz3Answer: null
+        };
+
+        // --- D3.js Setup ---
+        const width = 500;
+        const height = 500;
+        const margin = {top: 40, right: 30, bottom: 40, left: 40};
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        const svg = d3.select("#graph-container")
+            .append("svg")
+            .attr("viewBox", `0 0 ${width} ${height}`)
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("class", "touch-action-none");
+
+        const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const xScale = d3.scaleLinear().domain([-3, 3]).range([0, innerWidth]);
+        const yScale = d3.scaleLinear().domain([-4, 4]).range([innerHeight, 0]);
+
+        // Achsen und Gitter
+        const xAxis = d3.axisBottom(xScale).ticks(6);
+        const yAxis = d3.axisLeft(yScale).ticks(8);
+
+        // Grid-Hintergrund
+        g.append("g").attr("class", "grid-x").attr("transform", `translate(0,${innerHeight})`).style("opacity", 0.1).call(d3.axisBottom(xScale).ticks(12).tickSize(-innerHeight).tickFormat(""));
+        g.append("g").attr("class", "grid-y").style("opacity", 0.1).call(d3.axisLeft(yScale).ticks(16).tickSize(-innerWidth).tickFormat(""));
+
+        g.append("g").attr("class", "x-axis").attr("transform", `translate(0,${yScale(0)})`).call(xAxis);
+        g.append("g").attr("class", "y-axis").attr("transform", `translate(${xScale(0)},0)`).call(yAxis);
+
+        // Dekorative Layer-Gruppen
+        const curveLayer = g.append("g").attr("id", "curves");
+        const helperLayer = g.append("g").attr("id", "helpers");
+        const markerLayer = g.append("g").attr("id", "markers");
+        const touchArea = g.append("rect")
+            .attr("width", innerWidth)
+            .attr("height", innerHeight)
+            .attr("fill", "transparent")
+            .style("cursor", "crosshair");
+
+        // --- Mathematische Modelle ---
+        
+        // Modell für Schritt 1 (Kubische Funktion mit schönen lokalen Extrema)
+        const polyF = (x) => 0.15 * Math.pow(x, 3) - 0.1 * Math.pow(x, 2) - 1.1 * x + 1.2;
+        const polyDF = (x) => 0.45 * Math.pow(x, 2) - 0.2 * x - 1.1;
+
+        // Funktionszeichner
+        function updateGraph() {
+            curveLayer.selectAll("*").remove();
+            helperLayer.selectAll("*").remove();
+            markerLayer.selectAll("*").remove();
+
+            if (state.currentStep === 1 || state.currentStep === 2 || state.currentStep === 5) {
+                // Plot f(x)
+                const xRange = d3.range(-3, 3.01, 0.05);
+                const lineGenF = d3.line().x(d => xScale(d)).y(d => yScale(polyF(d)));
+                curveLayer.append("path")
+                    .datum(xRange)
+                    .attr("fill", "none")
+                    .attr("stroke", "#4f46e5")
+                    .attr("stroke-width", 3.5)
+                    .attr("d", lineGenF);
+
+                // Plot f'(x) (Dashed Red)
+                const lineGenDF = d3.line().x(d => xScale(d)).y(d => yScale(polyDF(d)));
+                curveLayer.append("path")
+                    .datum(xRange)
+                    .attr("fill", "none")
+                    .attr("stroke", "#f43f5e")
+                    .attr("stroke-width", 2)
+                    .attr("stroke-dasharray", "4,4")
+                    .attr("d", lineGenDF);
+
+                // Initialer Tracer bei x = 0
+                drawTracer(0);
+            } else if (state.currentStep === 3) {
+                // Plot f(x) = x^n
+                const n = state.exponentN;
+                const xRange = d3.range(-2.2, 2.21, 0.05);
+                
+                const fN = (x) => Math.pow(x, n);
+                const dfN = (x) => n * Math.pow(x, n - 1);
+
+                const lineGenFN = d3.line()
+                    .x(d => xScale(d))
+                    .y(d => {
+                        let y = fN(d);
+                        return yScale(Math.max(-4, Math.min(4, y)));
+                    });
+
+                const lineGenDFN = d3.line()
+                    .x(d => xScale(d))
+                    .y(d => {
+                        let y = dfN(d);
+                        return yScale(Math.max(-4, Math.min(4, y)));
+                    });
+
+                curveLayer.append("path")
+                    .datum(xRange)
+                    .attr("fill", "none")
+                    .attr("stroke", "#2563eb")
+                    .attr("stroke-width", 3.5)
+                    .attr("d", lineGenFN);
+
+                curveLayer.append("path")
+                    .datum(xRange)
+                    .attr("fill", "none")
+                    .attr("stroke", "#ea580c")
+                    .attr("stroke-width", 2)
+                    .attr("stroke-dasharray", "4,4")
+                    .attr("d", lineGenDFN);
+
+                // Beschriftungen
+                markerLayer.append("text")
+                    .attr("x", xScale(1.5))
+                    .attr("y", yScale(fN(1.5)) - 10)
+                    .attr("fill", "#2563eb")
+                    .attr("font-size", "12px")
+                    .attr("font-weight", "bold")
+                    .text("f(x)");
+
+                markerLayer.append("text")
+                    .attr("x", xScale(-1.5))
+                    .attr("y", yScale(dfN(-1.5)) - 10)
+                    .attr("fill", "#ea580c")
+                    .attr("font-size", "12px")
+                    .attr("font-weight", "bold")
+                    .text("f'(x)");
+
+                document.getElementById("live-panel").innerHTML = `Potenzregel aktiv: n = ${n}. <br>Graphen weisen die charakteristischen Verläufe von Potenzfunktionen auf!`;
+            } else if (state.currentStep === 4) {
+                // Kapitel 4: Kombinierte Beispielfunktion f(x) = 3x^4 - 5x + 2
+                const fComb = (x) => 0.1 * Math.pow(x, 4) - 0.5 * x + 1; // Skaliert für Anzeige
+                const dfComb = (x) => 0.4 * Math.pow(x, 3) - 0.5;
+
+                const xRange = d3.range(-2.5, 2.51, 0.05);
+                const lineGenComb = d3.line().x(d => xScale(d)).y(d => yScale(fComb(d)));
+                const lineGenDFComb = d3.line().x(d => xScale(d)).y(d => yScale(dfComb(d)));
+
+                curveLayer.append("path")
+                    .datum(xRange)
+                    .attr("fill", "none")
+                    .attr("stroke", "#9333ea")
+                    .attr("stroke-width", 3.5)
+                    .attr("d", lineGenComb);
+
+                curveLayer.append("path")
+                    .datum(xRange)
+                    .attr("fill", "none")
+                    .attr("stroke", "#e11d48")
+                    .attr("stroke-width", 2)
+                    .attr("stroke-dasharray", "4,4")
+                    .attr("d", lineGenDFComb);
+
+                document.getElementById("live-panel").innerHTML = `Graphen-Beispiel für Ableitungsregeln: <br><span class="text-purple-400">f(x)</span> (violett) und Ableitung <span class="text-rose-400">f'(x)</span> (rot gestrichelt).`;
+            }
+        }
+
+        // Steigungs-Tracer zeichnen
+        function drawTracer(xVal) {
+            helperLayer.selectAll("*").remove();
+            markerLayer.selectAll("*").remove();
+
+            if (state.currentStep !== 1 && state.currentStep !== 5 && state.currentStep !== 2) return;
+
+            const yVal = polyF(xVal);
+            const m = polyDF(xVal);
+
+            // Vertikale Suchlinie
+            helperLayer.append("line")
+                .attr("x1", xScale(xVal))
+                .attr("y1", yScale(-4))
+                .attr("x2", xScale(xVal))
+                .attr("y2", yScale(4))
+                .attr("stroke", "#94a3b8")
+                .attr("stroke-width", 1.5)
+                .attr("stroke-dasharray", "3,3");
+
+            // Tangenten-Lineatur
+            const dx = 1.0;
+            const tangentLineGen = d3.line()
+                .x(d => xScale(d))
+                .y(d => yScale(yVal + m * (d - xVal)));
+
+            helperLayer.append("path")
+                .datum([xVal - dx, xVal + dx])
+                .attr("fill", "none")
+                .attr("stroke", "#10b981")
+                .attr("stroke-width", 2.5)
+                .attr("d", tangentLineGen);
+
+            // Blauer Punkt auf f(x)
+            markerLayer.append("circle")
+                .attr("cx", xScale(xVal))
+                .attr("cy", yScale(yVal))
+                .attr("r", 6)
+                .attr("fill", "#4f46e5");
+
+            // Roter Punkt auf f'(x)
+            markerLayer.append("circle")
+                .attr("cx", xScale(xVal))
+                .attr("cy", yScale(m))
+                .attr("r", 6)
+                .attr("fill", "#ef4444");
+
+            // Live-Panel Text aktualisieren
+            document.getElementById("live-panel").innerHTML = `
+                An der Stelle <span class="text-indigo-400 font-bold">x = ${xVal.toFixed(2)}</span>:<br>
+                Tangentensteigung <span class="text-emerald-400 font-bold">m = f'(x) = ${m.toFixed(2)}</span><br>
+                Ableitungshöhe <span class="text-rose-400 font-bold">y_f' = ${m.toFixed(2)}</span>
+            `;
+        }
+
+        // Mouse- & Touch-Event Bindings
+        function handlePointerMove(event) {
+            const coords = d3.pointer(event);
+            const xVal = xScale.invert(coords[0]);
+            const clampedX = Math.max(-2.9, Math.min(2.9, xVal));
+            drawTracer(clampedX);
+        }
+
+        touchArea.on("mousemove", handlePointerMove);
+        touchArea.on("touchmove", function(event) {
+            event.preventDefault();
+            const touch = event.touches[0];
+            const rect = event.target.getBoundingClientRect();
+            const xVal = xScale.invert(touch.clientX - rect.left);
+            const clampedX = Math.max(-2.9, Math.min(2.9, xVal));
+            drawTracer(clampedX);
+        });
+
+
+        // --- UI & Navigationslogik ---
+
+        function renderNav() {
+            const nav = document.getElementById('step-nav');
+            if(!nav) return;
+            nav.innerHTML = '';
+            const titles = ["1. Detektiv", "2. Zuordnung", "3. Potenzregel", "4. Ableitungs-Mix", "5. Meister"];
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.createElement('button');
+                btn.innerText = titles[i - 1];
+                
+                const isActive = i === state.currentStep;
+                btn.className = `px-3.5 py-1.5 mb-1 text-xs md:text-sm font-semibold rounded-full transition-all ${
+                    isActive ? 'bg-slate-800 text-white shadow' : 'bg-slate-200 text-slate-700 hover:bg-slate-300 cursor-pointer'
+                }`;
+                
+                btn.onclick = () => goToStep(i);
+                nav.appendChild(btn);
+            }
+        }
+
+        function goToStep(step) {
+            state.currentStep = step;
+            
+            document.querySelectorAll('.step-card').forEach(el => {
+                el.classList.add('hidden-step'); el.classList.remove('active-step');
+            });
+            
+            const nextEl = document.getElementById(`step-${step}`);
+            if (nextEl) {
+                nextEl.classList.remove('hidden-step'); nextEl.classList.add('active-step');
+                const rightPane = document.getElementById('right-pane');
+                if(rightPane) rightPane.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            
+            renderNav();
+            updateGraph();
+            renderMathNotation();
+
+            if (step === 2) {
+                resetStep2();
+            } else if (step === 3) {
+                onPowerSliderChange();
+            } else if (step === 5) {
+                if (questionsAnswered === 0) {
+                    nextTrainerQuestion();
+                }
+            }
+        }
+
+        function showFeedback(step, isCorrect, msg) {
+            const fb = document.getElementById(`feedback-${step}`);
+            fb.classList.remove('hidden');
+            fb.innerHTML = msg;
+            if (isCorrect) {
+                fb.className = "mb-4 p-3 rounded-lg text-xs md:text-sm font-semibold bg-green-100 text-green-800 border border-green-300 shadow-sm";
+                setTimeout(() => goToStep(step + 1), 3500);
+            } else {
+                fb.className = "mb-4 p-3 rounded-lg text-xs md:text-sm font-semibold bg-red-100 text-red-800 border border-red-300 animate-pulse shadow-sm";
+            }
+        }
+
+
+        // --- Kapitel-Spezifische Logik ---
+
+        // KAPITEL 1: Detektiv
+        function checkStep1() {
+            const boxes = Array.from(document.querySelectorAll('#mc-1 input'));
+            const answers = boxes.map(b => b.checked);
+            
+            // 0 und 1 sind richtig. 2 ist falsch.
+            if (answers[0] && answers[1] && !answers[2]) {
+                showFeedback(1, true, "<strong>Perfekt gelöst!</strong> Das hast du wunderbar erkannt: Waagerechte Tangenten führen zu Nullstellen im Ableitungsgraphen, und ein steigender Funktionsverlauf sorgt für positive Ableitungswerte (oberhalb der Achse). Auf geht's zu Kapitel 2!");
+            } else {
+                showFeedback(1, false, "<strong>Das stimmt noch nicht ganz.</strong> Probiere es noch einmal aus. Tipp: Führe den Tracer an den Tiefpunkt der blauen Kurve bei ca. x = 1,7. Wie hoch steht der rote Punkt an dieser x-Stelle?");
+            }
+        }
+
+        // KAPITEL 2: Matching-Game
+        const solutionPairs = {
+            f1: "df3", // Parabel nach oben -> Gerade nach oben
+            f2: "df2", // Kubisch -> Parabel nach oben
+            f3: "df1"  // Parabel nach unten -> Gerade nach unten
+        };
+
+        function selectMatchingCard(id) {
+            // Highlight entfernen
+            document.querySelectorAll("[id^='card-f']").forEach(el => {
+                el.classList.remove("border-indigo-500", "ring-2", "ring-indigo-300");
+            });
+
+            state.selectedSource = id;
+            document.getElementById(`card-${id}`).classList.add("border-indigo-500", "ring-2", "ring-indigo-300");
+        }
+
+        function selectMatchingTarget(targetId) {
+            if (!state.selectedSource) {
+                alert("Bitte wähle zuerst links eine Funktion aus!");
+                return;
+            }
+
+            // Zuweisung eintragen
+            state.matchingPairs[state.selectedSource] = targetId;
+
+            // UI Aktualisieren
+            const labels = { f1: "Funktion A", f2: "Funktion B", f3: "Funktion C" };
+            document.getElementById(`label-${targetId}`).innerText = `Zugeordnet: ${labels[state.selectedSource]}`;
+            document.getElementById(`label-${targetId}`).className = "text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300";
+
+            // Quell-Highlight entfernen
+            document.getElementById(`card-${state.selectedSource}`).classList.remove("border-indigo-500", "ring-2", "ring-indigo-300");
+            document.getElementById(`card-${state.selectedSource}`).classList.add("opacity-40");
+
+            state.selectedSource = null;
+        }
+
+        function checkStep2() {
+            const isGraphCorrect = state.matchingPairs.f1 === solutionPairs.f1 &&
+                                   state.matchingPairs.f2 === solutionPairs.f2 &&
+                                   state.matchingPairs.f3 === solutionPairs.f3;
+
+            const r1 = document.getElementById("reason-f1").value;
+            const r2 = document.getElementById("reason-f2").value;
+            const r3 = document.getElementById("reason-f3").value;
+
+            if (!state.matchingPairs.f1 || !state.matchingPairs.f2 || !state.matchingPairs.f3) {
+                showFeedback(2, false, "Bitte ordne zuerst alle drei Funktionsgraphen zu!");
+                return;
+            }
+
+            if (!r1 || !r2 || !r3) {
+                showFeedback(2, false, "Bitte wähle auch für alle drei Zuordnungen die passende Begründung aus!");
+                return;
+            }
+
+            const isReasonCorrect = r1 === "pos_slope" && r2 === "extrema" && r3 === "neg_slope";
+
+            if (isGraphCorrect && isReasonCorrect) {
+                showFeedback(2, true, "<strong>Sensationelle Leistung!</strong> Du hast alle Graphentypen fehlerfrei verknüpft und mathematisch absolut korrekt begründet. Parabeln (Grad 2) werden zu Geraden (Grad 1), und kubische Funktionen (Grad 3) werden zu Parabeln (Grad 2). Du bist bereit für die Potenzregel!");
+            } else if (isGraphCorrect && !isReasonCorrect) {
+                showFeedback(2, false, "<strong>Fast geschafft!</strong> Deine Graphen-Zuordnung stimmt perfekt, aber bei den Begründungen ist noch etwas vertauscht oder unvollständig. Lies dir die Eigenschaften noch einmal genau durch.");
+            } else {
+                showFeedback(2, false, "<strong>Das ist leider noch nicht ganz richtig.</strong> Ein Tipp: Die Funktion B hat zwei lokale Extremstellen (einen Hochpunkt links und einen Tiefpunkt rechts). Ihre Ableitung muss folglich genau zwei Nullstellen besitzen (die rote Parabel). Schau noch mal genau auf die markierten Schnittstellen!");
+            }
+        }
+
+        function resetStep2() {
+            state.matchingPairs = { f1: null, f2: null, f3: null };
+            state.selectedSource = null;
+
+            document.querySelectorAll("[id^='card-f']").forEach(el => {
+                el.classList.remove("border-indigo-500", "ring-2", "ring-indigo-300", "opacity-40");
+            });
+
+            document.querySelectorAll("[id^='label-df']").forEach(el => {
+                el.innerText = "Nicht zugeordnet";
+                el.className = "text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded";
+            });
+
+            document.getElementById("reason-f1").value = "";
+            document.getElementById("reason-f2").value = "";
+            document.getElementById("reason-f3").value = "";
+
+            document.getElementById("feedback-2").classList.add("hidden");
+        }
+
+        // KAPITEL 3: Potenzregel
+        function onPowerSliderChange() {
+            state.exponentN = parseInt(document.getElementById("slider-n").value);
+            document.getElementById("val-n").innerText = `n = ${state.exponentN}`;
+            
+            const liveRegel = document.getElementById("live-rule-text");
+            liveRegel.innerText = `Aus f(x) = x${getSuperScript(state.exponentN)} wird f'(x) = ${state.exponentN}x${getSuperScript(state.exponentN - 1)}`;
+
+            updateGraph();
+        }
+
+        function getSuperScript(num) {
+            if (num === 1) return "";
+            if (num === 0) return "";
+            const dict = {2: "²", 3: "³", 4: "⁴", 5: "⁵"};
+            return dict[num] || `^${num}`;
+        }
+
+        function selectQuiz3(idx) {
+            document.querySelectorAll("[id^='btn-q3-']").forEach(el => {
+                el.className = "py-2.5 px-3 text-xs md:text-sm rounded-lg border bg-white border-slate-200 text-slate-700 transition hover:bg-slate-50";
+            });
+            document.getElementById(`btn-q3-${idx}`).className = "py-2.5 px-3 text-xs md:text-sm rounded-lg border bg-amber-500 text-white font-bold transition border-amber-600 shadow-sm";
+            state.selectedQuiz3Answer = idx;
+        }
+
+        function checkStep3() {
+            if (state.selectedQuiz3Answer === null) {
+                alert("Bitte wähle zuerst eine Antwort aus!");
+                return;
+            }
+
+            if (state.selectedQuiz3Answer === 1) { // 5 * x^4
+                showFeedback(3, true, "<strong>Ausgezeichnet!</strong> Der Exponent wandert nach vorne als Faktor und verringert sich oben um 1. Das ist die Potenzregel in Perfektion!");
+            } else {
+                showFeedback(3, false, "<strong>Leider falsch.</strong> Denk an die Formel: Der Exponent wandert nach vorne und die neue Hochzahl verringert sich um genau 1.");
+            }
+        }
+
+        // KAPITEL 4: Ableitungsregeln-Mix mit detailliertem Feedback
+        function checkStep4() {
+            const val1 = document.getElementById("select-rule-1").value;
+            const val2 = document.getElementById("select-rule-2").value;
+            const val3 = document.getElementById("select-rule-3").value;
+            const val4 = document.getElementById("select-rule-4").value;
+            const val5 = document.getElementById("select-rule-5").value;
+            const val6 = document.getElementById("select-rule-6").value;
+
+            if (!val1 || !val2 || !val3 || !val4 || !val5 || !val6) {
+                showFeedback(4, false, "Bitte wähle für alle sechs Aufgaben eine Ableitung aus!");
+                return;
+            }
+
+            const isCorrect = val1 === "correct" && 
+                              val2 === "correct" && 
+                              val3 === "correct" && 
+                              val4 === "correct" && 
+                              val5 === "correct" && 
+                              val6 === "correct";
+
+            if (isCorrect) {
+                showFeedback(4, true, "<strong>Perfekt gerechnet! 100% richtig!</strong> Du hast alle kniffligen Sonderfälle gemeistert: <br>• Die Faktor-, Summen- und Konstantenregel.<br>• Das Ausmultiplizieren von Produkten vor dem Ableiten.<br>• Das Ableiten von Funktionen mit Parametern (wie t), bei denen der Parameter wie eine ganz normale Zahl als konstanter Faktor behandelt wird oder wegfällt.");
+            } else {
+                let errorMsg = "<strong>Das stimmt noch nicht ganz.</strong> Prüfe deine Antworten noch einmal sorgfältig:<br>";
+                if (val1 !== "correct" || val2 !== "correct") errorMsg += "• Überprüfe die klassischen Terme 1 & 2.<br>";
+                if (val3 !== "correct") errorMsg += "• Bei Aufgabe 3: π² hat kein x, verhält sich also wie eine feste Zahl.<br>";
+                if (val4 !== "correct") errorMsg += "• Bei Aufgabe 4: Multipliziere zuerst aus zu 2x³ - 5x und leite dann ab.<br>";
+                if (val5 !== "correct") errorMsg += "• Bei Aufgabe 5: Löse zuerst die Klammern auf zu x² + x - 6.<br>";
+                if (val6 !== "correct") errorMsg += "• Bei Aufgabe 6: t ist ein konstanter Parameter. Der Term -4t³ hat kein x, fällt also beim Ableiten nach x komplett weg! (Konstantenregel)";
+                
+                showFeedback(4, false, errorMsg);
+            }
+        }
+
+
+        // --- KAPITEL 5: Meister-Trainer (Endloser Abitur-Simulator) ---
+
+        // Die mathematischen HTML-Glieder wurden auf escaptes Doppelanführungszeichen (\\") umgestellt.
+        // Das garantiert, dass Prime-Kriterien (') nicht fälschlicherweise das Attribut schließen!
+        const trainerQuestions = [
+            {
+                q: "Der Graph einer ganzrationalen Funktion <span class=\"math\" data-tex=\"f\">f</span> besitzt an der Stelle <span class=\"math\" data-tex=\"x = -2\">x = -2</span> einen Tiefpunkt. Welche Eigenschaft hat der Ableitungsgraph an dieser Stelle?",
+                options: [
+                    "Der Graph von <span class=\"math\" data-tex=\"f'\">f'</span> hat dort eine Nullstelle.",
+                    "Der Graph von <span class=\"math\" data-tex=\"f'\">f'</span> verläuft vor <span class=\"math\" data-tex=\"x = -2\">x = -2</span> unterhalb und danach oberhalb der x-Achse (Vorzeichenwechsel von - nach +).",
+                    "Der Graph von <span class=\"math\" data-tex=\"f'\">f'</span> hat dort einen Hochpunkt.",
+                    "Der Graph von <span class=\"math\" data-tex=\"f'\">f'</span> verläuft dort komplett oberhalb der x-Achse."
+                ],
+                correct: [0, 1],
+                explanation: "Im Tiefpunkt liegt eine waagerechte Tangente vor, weshalb f'(-2) = 0 sein muss (Nullstelle). Da die Funktion links des Tiefpunkts fällt (f' < 0) und rechts davon steigt (f' > 0), hat f' an dieser Stelle einen Vorzeichenwechsel von Minus nach Plus."
+            },
+            {
+                q: "Welche Ableitungsfunktion hat <span class=\"math\" data-tex=\"f(x) = \\frac{1}{4}x^4 - 2x^2 + 5x\">f(x) = \\frac{1}{4}x^4 - 2x^2 + 5x</span>?",
+                options: [
+                    "<span class=\"math\" data-tex=\"f'(x) = x^3 - 4x + 5\">f'(x) = x^3 - 4x + 5</span>",
+                    "<span class=\"math\" data-tex=\"f'(x) = x^3 - 4x\">f'(x) = x^3 - 4x</span>",
+                    "<span class=\"math\" data-tex=\"f'(x) = \\frac{1}{4}x^3 - 4x + 5\">f'(x) = \\frac{1}{4}x^3 - 4x + 5</span>",
+                    "<span class=\"math\" data-tex=\"f'(x) = x^3 - 2x + 5\">f'(x) = x^3 - 2x + 5</span>"
+                ],
+                correct: [0],
+                explanation: "Anwendung der Potenzregel Glied für Glied: (1/4)*4*x³ - 2*2*x¹ + 5 = x³ - 4x + 5."
+            },
+            {
+                q: "Welcher Zusammenhang zwischen den Graden einer ganzrationalen Funktion <span class=\"math\" data-tex=\"f\">f</span> und ihrer Ableitung <span class=\"math\" data-tex=\"f'\">f'</span> ist korrekt?",
+                options: [
+                    "Ist <span class=\"math\" data-tex=\"f\">f</span> eine kubische Funktion (Grad 3), ist <span class=\"math\" data-tex=\"f'\">f'</span> immer eine quadratische Funktion (Grad 2).",
+                    "Die Ableitung verringert den Grad der Funktion immer um genau 1.",
+                    "Die Ableitungsfunktion hat immer denselben Grad wie die Ursprungsfunktion.",
+                    "Der Grad erhöht sich um 1."
+                ],
+                correct: [0, 1],
+                explanation: "Durch die Ableitung sinkt der Grad jeder ganzrationalen Funktion um genau 1, da der Exponent x^n zu n*x^(n-1) wird."
+            },
+            {
+                q: "Ein Ableitungsgraph verläuft im Intervall [1; 3] komplett oberhalb der x-Achse (<span class=\"math\" data-tex=\"f'(x) > 0\">f'(x) > 0</span>). Was bedeutet das für den ursprünglichen Graphen von f?",
+                options: [
+                    "Der Graph von <span class=\"math\" data-tex=\"f\">f</span> ist im Intervall [1; 3] streng monoton steigend.",
+                    "Der Graph von <span class=\"math\" data-tex=\"f\">f</span> hat in diesem Intervall einen Hochpunkt.",
+                    "Der Graph von <span class=\"math\" data-tex=\"f\">f</span> verläuft ebenfalls oberhalb der x-Achse.",
+                    "Der Graph von <span class=\"math\" data-tex=\"f\">f</span> fällt im Intervall [1; 3] streng monoton."
+                ],
+                correct: [0],
+                explanation: "Ist die Ableitungsfunktion positiv (f'(x) > 0), ist die Steigung überall positiv. Das bedeutet geometrisch, dass der Funktionsgraph streng monoton steigt."
+            }
+        ];
+
+        let currentTrainerQ = null;
+        let lastQIndex = -1;
+        let questionsAnswered = 0;
+        let trainerAttempts = 0;
+
+        function nextTrainerQuestion() {
+            document.getElementById('trainer-feedback').classList.add('hidden');
+            document.getElementById('btn-next-trainer').classList.add('hidden');
+            document.getElementById('btn-check-trainer').classList.remove('hidden');
+            trainerAttempts = 0;
+
+            let nextIdx;
+            do {
+                nextIdx = Math.floor(Math.random() * trainerQuestions.length);
+            } while (nextIdx === lastQIndex);
+            
+            lastQIndex = nextIdx;
+            currentTrainerQ = trainerQuestions[nextIdx];
+
+            document.getElementById('trainer-q-text').innerHTML = currentTrainerQ.q;
+            
+            const optsContainer = document.getElementById('trainer-options');
+            optsContainer.innerHTML = '';
+            
+            currentTrainerQ.options.forEach((opt, idx) => {
+                const label = document.createElement('label');
+                label.className = "flex items-start gap-3 p-3 bg-white hover:bg-slate-50 rounded-lg shadow-sm cursor-pointer border border-slate-200 transition-colors";
+                label.innerHTML = `
+                    <input type="checkbox" value="${idx}" class="mt-1 w-5 h-5 text-emerald-600 focus:ring-emerald-500 border-slate-300 rounded">
+                    <span class="text-slate-700 text-xs md:text-sm">${opt}</span>
+                `;
+                optsContainer.appendChild(label);
+            });
+
+            renderMathNotation();
+        }
+
+        function checkTrainer() {
+            if (!currentTrainerQ) return;
+            const boxes = Array.from(document.querySelectorAll('#trainer-options input'));
+            const selected = boxes.map((b, i) => b.checked ? i : -1).filter(i => i !== -1);
+            
+            const isCorrect = selected.length === currentTrainerQ.correct.length && 
+                              selected.every(val => currentTrainerQ.correct.includes(val));
+
+            const fb = document.getElementById('trainer-feedback');
+            fb.classList.remove('hidden');
+
+            if (isCorrect) {
+                questionsAnswered++;
+                document.getElementById('trainer-counter').innerText = `Fragen gelöst: ${questionsAnswered}`;
+                
+                fb.className = "mb-4 p-4 rounded-lg text-xs md:text-sm bg-green-100 text-green-800 border border-green-300 shadow-sm";
+                fb.innerHTML = `<strong>Großartig gelöst! ✓</strong> ${currentTrainerQ.explanation}`;
+                document.getElementById('btn-check-trainer').classList.add('hidden');
+                document.getElementById('btn-next-trainer').classList.remove('hidden');
+            } else {
+                trainerAttempts++;
+                fb.className = "mb-4 p-4 rounded-lg text-xs md:text-sm bg-red-100 text-red-800 border border-red-300 animate-pulse shadow-sm";
+                let errorHtml = `<strong>Noch nicht ganz richtig.</strong> Denke scharf nach! Es können auch mehrere Antworten zutreffen.`;
+                
+                if (trainerAttempts >= 2) {
+                    errorHtml += `
+                        <button type="button" onclick="solveTrainer()" class="mt-3 block w-full bg-red-200 hover:bg-red-300 text-red-900 font-semibold py-1.5 px-3 rounded shadow-sm transition text-xs">
+                            💡 Ich brauche Hilfe – Lösung anzeigen
+                        </button>`;
+                }
+                
+                fb.innerHTML = errorHtml;
+            }
+            renderMathNotation();
+        }
+
+        function solveTrainer() {
+            const boxes = Array.from(document.querySelectorAll('#trainer-options input'));
+            boxes.forEach((b, i) => {
+                b.checked = currentTrainerQ.correct.includes(i);
+            });
+            checkTrainer();
+        }
+
+
+        // --- LaTeX Formel-Rendering (Absolut robust und duplikationssicher) ---
+        function renderMathNotation() {
+            if (!window.katex) return;
+            
+            // Statische mathematische Terme mit IDs
+            const mathList = [
+                { id: "math-x0-s1", tex: "x" },
+                { id: "math-x0-s1-q", tex: "x_0" },
+                { id: "math-f-s2", tex: "f(x)" },
+                { id: "math-f-s3", tex: "f(x) = x^n" },
+                { id: "math-power-rule", tex: "f(x) = x^n \\implies f'(x) = n \\cdot x^{n-1}" }
+            ];
+
+            mathList.forEach(m => {
+                const el = document.getElementById(m.id);
+                if (el) {
+                    try {
+                        el.innerHTML = ""; // Container leeren
+                        const span = document.createElement("span");
+                        el.appendChild(span);
+                        katex.render(m.tex, span, { throwOnError: false });
+                    } catch(e) {
+                        el.innerText = m.tex;
+                    }
+                }
+            });
+
+            // Alle Glieder mit Klasse "math" sicher auslesen und genau einmal rendern
+            document.querySelectorAll(".math").forEach(el => {
+                // Original-TeX-Code sichern, falls noch nicht geschehen
+                if (!el.dataset.tex) {
+                    if (el.getAttribute('data-tex')) {
+                        el.dataset.tex = el.getAttribute('data-tex');
+                    } else if (!el.querySelector('.katex')) {
+                        el.dataset.tex = el.textContent.trim();
+                    }
+                }
+                
+                const pristineTex = el.dataset.tex;
+                if (pristineTex && pristineTex.length > 0) {
+                    try {
+                        el.innerHTML = ""; // Verhindert rekursive Duplikate
+                        const span = document.createElement("span");
+                        el.appendChild(span);
+                        katex.render(pristineTex, span, { throwOnError: false, displayMode: false });
+                    } catch(e) {
+                        el.innerText = pristineTex;
+                    }
+                }
+            });
+        }
+
+
+        // --- Initialisierung ---
+        window.onload = function() {
+            updateGraph();
+            renderNav();
+            
+            setTimeout(renderMathNotation, 150);
+        }
+
+    </script>
+</body>
+</html>
